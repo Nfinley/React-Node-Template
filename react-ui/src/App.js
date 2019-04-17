@@ -1,69 +1,61 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-function App() {
-  const [message, setMessage] = useState(null);
-  const [isFetching, setIsFetching] = useState(false);
-  const [url, setUrl] = useState('/api');
+class App extends Component {
+    state = {
+        response: ''
+    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            message: null,
+            fetching: true
+        };
+    }
 
-  const fetchData = useCallback(() => {
-    fetch(url)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`status ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(json => {
-        setMessage(json.message);
-        setIsFetching(false);
-      }).catch(e => {
-        setMessage(`API call failed: ${e}`);
-        setIsFetching(false);
-      })
-  }, [url]);
+    componentDidMount() {
+        fetch('/api')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`status ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(json => {
+                this.setState({
+                    message: json.message,
+                    fetching: false
+                });
+            }).catch(e => {
+            this.setState({
+                message: `API call failed: ${e}`,
+                fetching: false
+            });
+        })
+    }
 
-  useEffect(() => {
-    setIsFetching(true);
-    fetchData();
-  }, [fetchData]);
-
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        { process.env.NODE_ENV === 'production' ?
-            <p>
-              This is a production build from create-react-app.
+    render() {
+        return (
+            <div className="App">
+            <div className="App-header">
+            <img src={logo} className="App-logo" alt="logo" />
+            <h2>Welcome to React</h2>
+        </div>
+        <p className="App-intro">
+            {'This is '}
+            <a href="https://github.com/Nfinley/heroku-cra-node">
+            {'create-react-app with a custom Node/Express server'}
+            </a><br/>
             </p>
-          : <p>
-              Edit <code>src/App.js</code> and save to reload.
+            <p className="App-intro">
+            {this.state.fetching
+                    ? 'Fetching message from API'
+                    : this.state.message}
             </p>
-        }
-        <p>{'« '}<strong>
-          {isFetching
-            ? 'Fetching message from API'
-            : message}
-        </strong>{' »'}</p>
-        <p><a
-          className="App-link"
-          href="https://github.com/mars/heroku-cra-node"
-        >
-          React + Node deployment on Heroku
-        </a></p>
-        <p><a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a></p>
-      </header>
-    </div>
-  );
-
+            </div>
+    );
+    }
 }
 
 export default App;
